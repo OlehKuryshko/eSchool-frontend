@@ -1,0 +1,17 @@
+FROM node:8.11.4 AS build
+WORKDIR /usr/src/app
+COPY package*.json ./
+RUN npm i
+COPY . .
+
+RUN npm run build
+
+FROM nginx:alpine
+WORKDIR /usr/share/nginx/html
+COPY --from=build /usr/src/app/dist/eSchool .
+
+ENV BACKEND_URL=http://backend:8080
+COPY entry.sh /conf/entry.sh
+RUN chmod +x /conf/entry.sh
+ENTRYPOINT ["/conf/entry.sh"]
+CMD ["nginx", "-g", "daemon off;"]
